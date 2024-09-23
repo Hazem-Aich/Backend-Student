@@ -50,16 +50,16 @@ exports.postStudent = (firstname, lastname, age, email, phone) => {
   });
 };
 
-exports.postUpdateStudent = (_id, firstname, lastname, age, email, phone) => {
+exports.postUpdateStudent = (id, firstname, lastname, age, email, phone) => {
   return new Promise((resolve, reject) => {
     mongoose
       .connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
       .then(() => {
-        return student.updateOne({ _id: id }, { firstname: firstname, lastname: lastname, email: email, phone: phone });
+        return student.updateOne({ _id: id }, { firstname: firstname, lastname: lastname, age: age, email: email, phone: phone });
       })
-      .then(() => {
+      .then(doc => {
         mongoose.disconnect();
-        resolve('Updated!');
+        resolve(doc);
       })
       .catch(err => {
         mongoose.disconnect();
@@ -91,6 +91,23 @@ exports.getOneStudent = id => {
       .connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
       .then(() => {
         return student.findOne({ _id: id });
+      })
+      .then(docs => {
+        mongoose.disconnect();
+        resolve(docs);
+      })
+      .catch(err => {
+        mongoose.disconnect();
+        reject(err);
+      });
+  });
+};
+exports.deleteOneStudent = id => {
+  return new Promise((resolve, reject) => {
+    mongoose
+      .connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
+      .then(() => {
+        return student.deleteOne({ _id: id });
       })
       .then(docs => {
         mongoose.disconnect();
