@@ -1,5 +1,14 @@
 const mongoose = require('mongoose');
+require('dotenv').config();
+const Joi = require('joi');
 
+const schemaValidator = Joi.object({
+  firstname: Joi.string().alphanum().min(3).max(30).required(),
+  lastname: Joi.string().alphanum().min(3).max(30).required(),
+  age: Joi.number().min(1),
+  email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }),
+  phone: Joi.number().min(8),
+});
 let schemaStudent = mongoose.Schema({
   firstname: String,
   lastname: String,
@@ -7,10 +16,9 @@ let schemaStudent = mongoose.Schema({
   email: String,
   phone: Number,
 });
+var url = process.env.URL;
 
 var student = mongoose.model('student ', schemaStudent);
-
-var url = 'mongodb://localhost:27017/University';
 
 exports.testConnection = () => {
   return new Promise((resolve, reject) => {
@@ -29,6 +37,11 @@ exports.postStudent = (firstname, lastname, age, email, phone) => {
     mongoose
       .connect(url)
       .then(() => {
+        let validation = schemaValidator.validate({ firstname: firstname, lastname: lastname, age: age, email: email, phone: phone });
+        if (validation.error) {
+          mongoose.disconnect();
+          reject(validation.error.details[0].message);
+        }
         let Student = new student({
           firstname: firstname,
           lastname: lastname,
